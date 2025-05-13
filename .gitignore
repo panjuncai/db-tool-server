@@ -1,0 +1,104 @@
+# ------------------------------------------------------------------------------
+# Python specific ignores
+# ------------------------------------------------------------------------------
+
+# Virtual environment
+# 忽略虚拟环境目录，通常命名为 venv 或 .venv
+venv/
+.venv/
+# 如果您使用conda，也请忽略conda环境目录，通常在用户目录下或指定位置
+# env/ # 或者你的conda环境名称
+
+# Byte-code files
+# 忽略Python生成的字节码文件 (.pyc) 和缓存目录 (__pycache__)
+*.pyc
+__pycache__/
+
+# Compiled extensions (for packages that require compilation)
+# 忽略编译生成的二进制文件
+*.so
+*.dll
+*.dylib
+
+# Distribution / packaging
+# 忽略打包分发相关的文件夹和文件
+.Python
+build/
+dist/
+*.egg-info/
+.env/ # 通常用于存放环境变量或敏感配置，强烈建议忽略
+
+# Pytest / coverage
+# 忽略测试覆盖率报告文件
+.coverage
+.pytest_cache/
+htmlcov/
+
+# mypy cache
+# 忽略mypy类型检查工具的缓存
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Sphinx documentation
+# 忽略Sphinx文档生成相关文件
+docs/_build/
+
+# Jupyter Notebook files
+# 忽略Jupyter Notebook的检查点文件
+.ipynb_checkpoints
+
+# Log files
+# 忽略日志文件
+*.log
+
+# Database files (if using file-based DB like SQLite)
+# 如果您使用SQLite数据库，忽略数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded files
+# 如果项目中有用户上传文件的目录，通常也需要忽略
+# uploads/
+# media/
+
+# Example: ignore a specific file with sensitive configuration (if not using .env)
+# 如果你有一个包含敏感信息的文件，例如 config.ini 或 settings.py，但不希望提交
+# config.ini
+# settings.py # 如果settings.py包含敏感信息且不希望提交
+
+
+# ------------------------------------------------------------------------------
+# IDE specific ignores
+# ------------------------------------------------------------------------------
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Eclipse
+.settings/
+.project
+.pydevproject
+
+# Spyder (usually installed with Anaconda)
+.spyderproject
+.spyderworkspace
+
+
+# ------------------------------------------------------------------------------
+# Operating System specific ignores
+# ------------------------------------------------------------------------------
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
