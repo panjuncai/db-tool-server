@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日志监控</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .log-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #555;
+            flex-wrap: wrap;
+        }
+        .log-info div {
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+        .log-info strong {
+            color: #333;
+        }
+        .log-container {
+            position: relative;
+        }
+        .log-content {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: Monaco, Menlo, 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 600px;
+            min-height: 400px;
+        }
+        .controls {
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .controls button, .controls select, .controls input {
+            margin-right: 10px;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .controls button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+        .controls button:hover {
+            background-color: #388E3C;
+        }
+        .controls button.red {
+            background-color: #f44336;
+        }
+        .controls button.red:hover {
+            background-color: #d32f2f;
+        }
+        .controls button.blue {
+            background-color: #2196F3;
+        }
+        .controls button.blue:hover {
+            background-color: #1976D2;
+        }
+        .controls label {
+            margin-right: 5px;
+            color: #333;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .status.connected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .status.disconnected {
+            background-color: #f44336;
+            color: white;
+        }
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .controls button, .controls select, .controls input {
+                width: 100%;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>日志监控面板</h1>
+            <div class="controls">
+                <div>
+                    <label for="connection-status">状态:</label>
+                    <span id="connection-status" class="status disconnected">未连接</span>
+                </div>
+                <button id="connect-btn" class="blue">连接</button>
+                <button id="disconnect-btn" class="red" disabled>断开</button>
+                <button id="refresh-btn">刷新</button>
+                <div>
+                    <label for="max-lines">显示行数:</label>
+                    <select id="max-lines">
+                        <option value="100">100</option>
+                        <option value="500" selected>500</option>
+                        <option value="1000">1000</option>
+                        <option value="2000">2000</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="update-interval">更新间隔(秒):</label>
+                    <input type="number" id="update-interval" min="1" max="60" value="5">
+                </div>
+                <button id="clear-btn" class="red">清空</button>
+                <button id="scroll-bottom-btn" class="blue">滚动到底部</button>
+                <button id="download-btn" class="blue">下载日志</button>
+            </div>
+            
+            <div class="log-info">
+                <div>
+                    <strong>文件路径:</strong> <span id="file-path">-</span>
+                </div>
+                <div>
+                    <strong>文件大小:</strong> <span id="file-size">-</span>
+                </div>
+                <div>
+                    <strong>最后修改:</strong> <span id="last-modified">-</span>
+                </div>
+                <div>
+                    <strong>最后更新:</strong> <span id="last-update">-</span>
+                </div>
+            </div>
+            
+            <div class="log-container">
+                <pre class="log-content" id="log-content">正在等待连接...</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入Socket.IO客户端库 -->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const logContent = document.getElementById('log-content');
+            const connectionStatus = document.getElementById('connection-status');
+            const connectBtn = document.getElementById('connect-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            const refreshBtn = document.getElementById('refresh-btn');
+            const maxLinesSelect = document.getElementById('max-lines');
+            const updateIntervalInput = document.getElementById('update-interval');
+            const clearBtn = document.getElementById('clear-btn');
+            const scrollBottomBtn = document.getElementById('scroll-bottom-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const filePath = document.getElementById('file-path');
+            const fileSize = document.getElementById('file-size');
+            const lastModified = document.getElementById('last-modified');
+            const lastUpdate = document.getElementById('last-update');
+            
+            // Socket.IO变量
+            let socket = null;
+            let autoScroll = true;
+            let connected = false;
+            
+            // 格式化文件大小
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 B';
+                const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(1024));
+                return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
+            }
+            
+            // 更新日志信息
+            function updateLogInfo(data) {
+                if (!data) return;
+                
+                filePath.textContent = data.file_path || '-';
+                fileSize.textContent = data.file_size ? formatFileSize(data.file_size) : '-';
+                lastModified.textContent = data.last_modified || '-';
+                lastUpdate.textContent = data.timestamp || '-';
+            }
+            
+            // 更新连接状态
+            function updateConnectionStatus(isConnected) {
+                connected = isConnected;
+                connectionStatus.className = isConnected ? 'status connected' : 'status disconnected';
+                connectionStatus.textContent = isConnected ? '已连接' : '未连接';
+                connectBtn.disabled = isConnected;
+                disconnectBtn.disabled = !isConnected;
+            }
+            
+            // 连接WebSocket
+            function connectSocket() {
+                if (socket) {
+                    socket.disconnect();
+                }
+                
+                // 创建Socket.IO连接
+                socket = io(window.location.origin + '/logs', {
+                    transports: ['websocket']
+                });
+                
+                // 连接事件
+                socket.on('connect', function() {
+                    updateConnectionStatus(true);
+                    logContent.textContent = '已连接到服务器，正在获取日志...';
+                    
+                    // 开始监控日志
+                    startLogMonitor();
+                });
+                
+                // 断开连接事件
+                socket.on('disconnect', function() {
+                    updateConnectionStatus(false);
+                    logContent.textContent += '\n\n连接已断开';
+                });
+                
+                // 日志更新事件
+                socket.on('log_update', function(data) {
+                    logContent.textContent = data.content || '没有日志内容';
+                    updateLogInfo(data);
+                    
+                    // 如果启用了自动滚动，则滚动到底部
+                    if (autoScroll) {
+                        logContent.scrollTop = logContent.scrollHeight;
+                    }
+                });
+            }
+            
+            // 断开WebSocket连接
+            function disconnectSocket() {
+                if (socket) {
+                    socket.emit('stop_log_monitor');
+                    socket.disconnect();
+                    socket = null;
+                }
+                updateConnectionStatus(false);
+            }
+            
+            // 开始监控日志
+            function startLogMonitor() {
+                if (!socket || !socket.connected) return;
+                
+                const maxLines = parseInt(maxLinesSelect.value);
+                const updateInterval = parseInt(updateIntervalInput.value);
+                
+                socket.emit('start_log_monitor', {
+                    max_lines: maxLines,
+                    interval: updateInterval
+                });
+            }
+            
+            // 刷新日志
+            function refreshLog() {
+                if (!socket || !socket.connected) {
+                    // 如果没有连接，则通过API获取日志
+                    fetch('/api/log?max_lines=' + maxLinesSelect.value)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.code === 200 && data.data) {
+                                logContent.textContent = data.data.content || '没有日志内容';
+                                updateLogInfo(data.data);
+                                
+                                if (autoScroll) {
+                                    logContent.scrollTop = logContent.scrollHeight;
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            logContent.textContent = '获取日志失败: ' + error.message;
+                        });
+                } else {
+                    // 如果已连接，则通过Socket.IO获取
+                    socket.emit('get_log', {
+                        max_lines: parseInt(maxLinesSelect.value)
+                    }, function(data) {
+                        logContent.textContent = data.content || '没有日志内容';
+                        updateLogInfo(data);
+                        
+                        if (autoScroll) {
+                            logContent.scrollTop = logContent.scrollHeight;
+                        }
+                    });
+                }
+            }
+            
+            // 清空日志显示
+            function clearLog() {
+                logContent.textContent = '日志已清空';
+            }
+            
+            // 滚动到底部
+            function scrollToBottom() {
+                logContent.scrollTop = logContent.scrollHeight;
+            }
+            
+            // 下载日志
+            function downloadLog() {
+                const content = logContent.textContent;
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'log_' + new Date().toISOString().replace(/[:.]/g, '-') + '.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+            
+            // 事件监听
+            connectBtn.addEventListener('click', connectSocket);
+            disconnectBtn.addEventListener('click', disconnectSocket);
+            refreshBtn.addEventListener('click', refreshLog);
+            clearBtn.addEventListener('click', clearLog);
+            scrollBottomBtn.addEventListener('click', scrollToBottom);
+            downloadBtn.addEventListener('click', downloadLog);
+            
+            // 参数变更时重新启动监控
+            maxLinesSelect.addEventListener('change', startLogMonitor);
+            updateIntervalInput.addEventListener('change', function() {
+                if (this.value < 1) this.value = 1;
+                if (this.value > 60) this.value = 60;
+                startLogMonitor();
+            });
+            
+            // 初始刷新日志
+            refreshLog();
+        });
+    </script>
+</body>
+</html> 

@@ -21,6 +21,11 @@ class Config:
     STATIC_DIR = os.path.join(BASE_DIR, 'static')
     IMG_UPLOAD_DIR = os.path.join(STATIC_DIR, 'img')
     
+    # 日志监控配置
+    LOG_MONITOR_FILE = os.environ.get('LOG_MONITOR_FILE') or '/tmp/test.log'  # 默认监控的日志文件
+    LOG_MONITOR_MAX_LINES = int(os.environ.get('LOG_MONITOR_MAX_LINES') or 1000)    # 最大显示行数
+    LOG_MONITOR_UPDATE_INTERVAL = int(os.environ.get('LOG_MONITOR_UPDATE_INTERVAL') or 5)  # 更新间隔(秒)
+    
     # 确保必要的目录存在
     @staticmethod
     def init_app(app):

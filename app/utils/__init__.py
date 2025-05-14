@@ -8,10 +8,13 @@ from .message import to_dict_msg
 
 from .auth import login_required
 
+from .log_monitor import LogMonitor
+
 __all__ = [
     'generate_auth_token',
     'verify_auth_token',
     'get_token_expiration',
     'login_required',
-    'to_dict_msg'
+    'to_dict_msg',
+    'LogMonitor'
 ]
