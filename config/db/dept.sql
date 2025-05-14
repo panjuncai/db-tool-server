@@ -1,0 +1,8 @@
+INSERT INTO DEPT(deptno,dname,loc) VALUES
+	(10,'ACCOUNTING','NEW YORK');
+INSERT INTO DEPT(deptno,dname,loc) VALUES (20,'RESEARCH','DALLAS');
+INSERT INTO DEPT(deptno,dname,loc) VALUES
+	(30,'SALES','CHICAGO');
+INSERT INTO DEPT(deptno,dname,loc) VALUES
+	(40,'OPERATIONS','BOSTON');
+commit;

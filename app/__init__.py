@@ -25,7 +25,11 @@ def create_app(config_name='default'):
     CORS(app)
     
     # 注册蓝图
-    from app.api import user_bp
+    from app.api import user_bp, dept_bp, emp_bp, bonus_bp, salgrade_bp
     app.register_blueprint(user_bp)
+    app.register_blueprint(dept_bp)
+    app.register_blueprint(emp_bp)
+    app.register_blueprint(bonus_bp)
+    app.register_blueprint(salgrade_bp)
     
     return app

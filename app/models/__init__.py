@@ -25,5 +25,9 @@ class BaseModel:
 from .user import User
 from .role import Role
 from .menu import Menu
+from .dept import Dept
+from .emp import Emp
+from .bonus import Bonus
+from .salgrade import Salgrade
 
-__all__ = ['User', 'Role', 'Menu']
+__all__ = ['User', 'Role', 'Menu', 'Dept', 'Emp', 'Bonus', 'Salgrade']
