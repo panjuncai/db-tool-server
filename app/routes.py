@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, current_app
 
 routes_bp = Blueprint('routes', __name__)
-
+ 
 @routes_bp.route('/logs')
 def log_monitor():
     """日志监控页面"""

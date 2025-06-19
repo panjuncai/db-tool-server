@@ -28,13 +28,14 @@ def create_app(config_name='default'):
     socketio.init_app(app, cors_allowed_origins="*")
     
     # 注册蓝图
-    from app.api import user_bp, dept_bp, emp_bp, bonus_bp, salgrade_bp, log_bp
+    from app.api import user_bp, dept_bp, emp_bp, bonus_bp, salgrade_bp, log_bp, customer_bp
     app.register_blueprint(user_bp)
     app.register_blueprint(dept_bp)
     app.register_blueprint(emp_bp)
     app.register_blueprint(bonus_bp)
     app.register_blueprint(salgrade_bp)
     app.register_blueprint(log_bp)
+    app.register_blueprint(customer_bp)
     
     # 注册页面路由
     from app.routes import routes_bp

@@ -29,5 +29,6 @@ from .dept import Dept
 from .emp import Emp
 from .bonus import Bonus
 from .salgrade import Salgrade
+from .customer import Customer
 
-__all__ = ['User', 'Role', 'Menu', 'Dept', 'Emp', 'Bonus', 'Salgrade']
+__all__ = ['User', 'Role', 'Menu', 'Dept', 'Emp', 'Bonus', 'Salgrade', 'Customer']
